@@ -148,8 +148,10 @@ async def extract_form_pages(pdf_bytes: BytesIO, pdf_name: str):
         page_indices.append(i)
 
         if scanned:
+            report["scanned_pages"] += 1
             tasks.append(groq_worker(page, groq_semaphore, i+1, pdf_name))
         else:
+            report["regular_pages"] += 1
             tasks.append(deepseek_worker(page_text, deepseek_semaphore, i+1, pdf_name))
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
