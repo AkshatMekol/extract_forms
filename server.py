@@ -57,26 +57,48 @@ async def process_single_tender(tender_id: str):
             print(f"⏩ Already processed, skipping")
             report["skipped_docs"] += 1
             continue
-        
-        pdf_bytes = await fetch_pdf(pdf_key)
 
-        extracted_pdf_bytes, num_pages = await extract_form_pages(pdf_bytes, pdf_name)
+        try:
+            pdf_bytes = await fetch_pdf(pdf_key)
+            page_errors = 0
 
-        output_path = f"fillable_forms_{pdf_name}"
-        if num_pages > 0:
-            reader = PdfReader(extracted_pdf_bytes)
-            writer = PdfWriter()
-            for page in reader.pages:
-                writer.add_page(page)
+            extracted_pdf_bytes, num_pages = await extract_form_pages(pdf_bytes, document_name)
 
-            with open(output_path, "wb") as f:
-                writer.write(f)
+            # If pages extraction fails or too many errors, abort this PDF
+            if num_pages == 0 and page_errors > 3:
+                print(f"❌ Too many errors, aborting PDF: {document_name}")
+                report["errors"].append(f"{document_name} aborted due to too many page errors")
+                continue
 
-            print(f"\n🎯 Combined FORM pages PDF saved as: {output_path}")
-        else:
-            print(f"\n⚠️ No FORM pages found in {pdf_name}")
+            output_path = f"fillable_forms_{document_name}"
+            if num_pages > 0:
+                reader = PdfReader(extracted_pdf_bytes)
+                writer = PdfWriter()
+                for page in reader.pages:
+                    writer.add_page(page)
 
-        print(f"📊 Total FORM pages in {pdf_name}: {num_pages}")
+                with open(output_path, "wb") as f:
+                    writer.write(f)
+
+                print(f"\n🎯 Combined FORM pages PDF saved as: {output_path}")
+                report["processed_docs"] += 1
+                if page_errors > 0:
+                    report["errors"].append(f"{document_name} had {page_errors} page errors")
+
+            else:
+                print(f"\n⚠️ No FORM pages found in {document_name}")
+                report["empty_docs"] += 1
+
+            # Mark document complete after each PDF
+            await asyncio.to_thread(mark_document_complete, tender_id, document_name)
+
+        except Exception as e:
+            print(f"❌ Error processing {document_name}: {e}")
+            report["errors"].append(f"{document_name}: {str(e)}")
+
+    print(f"\n✅ Finished tender {tender_id}")
+    print(f"📊 Report: {report}")
+    return report
 
 @app.post("/process/{tender_id}")
 async def route_process(tender_id: str):
