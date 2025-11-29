@@ -13,7 +13,7 @@ def get_tender_ids(min_value):
     cursor = tenders_collection.find(
         {
             "tender_value": {"$gte": min_value},
-            "industries": {"$in": ALLOWED_INDUSTRIES}  # filter by industries
+            "industries": {"$in": ALLOWED_INDUSTRIES}  
         },
         {"_id": 1}
     )
