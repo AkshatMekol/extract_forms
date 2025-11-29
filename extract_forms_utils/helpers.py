@@ -3,7 +3,7 @@ import fitz
 import asyncio
 from PyPDF2 import PdfReader, PdfWriter
 from utils.llm_utils import query_groq, query_deepseek
-from utils.config import MAX_PROCESSES_GROQ, MAX_PROCESSES_DEEPSEEK, CLASSIFY_PROMPT
+from config import MAX_PROCESSES_GROQ, MAX_PROCESSES_DEEPSEEK, CLASSIFY_PROMPT
 
 def is_scanned_page(page):
     text = page.get_text() or ""
