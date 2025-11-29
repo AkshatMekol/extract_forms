@@ -53,7 +53,7 @@ async def process_single_tender(tender_id: str):
         document_name = os.path.basename(pdf_key)
         print(f"📄 Document: {document_name}")
 
-        if await asyncio.to_thread(is_document_complete, tender_id, document_name):
+        if await asyncio.to_thread(is_form_complete, tender_id, document_name):
             print(f"⏩ Already processed, skipping")
             report["skipped_docs"] += 1
             continue
@@ -72,7 +72,7 @@ async def process_single_tender(tender_id: str):
                 report["errors"].append(f"{document_name} aborted due to {page_errors} page errors")
                 continue
 
-            await asyncio.to_thread(mark_document_complete, tender_id, document_name, form_pages)
+            await asyncio.to_thread(mark_form_complete, tender_id, document_name, form_pages)
             report["processed_docs"] += 1
 
             if page_errors > 0:
