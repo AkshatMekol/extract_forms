@@ -40,6 +40,7 @@ async def process_single_tender(tender_id: str):
         "empty_docs": 0,
         "scanned_pages": 0,
         "regular_pages": 0,
+        "total_page_errors": 0,  
         "errors": []
     }
 
@@ -60,13 +61,12 @@ async def process_single_tender(tender_id: str):
 
         try:
             pdf_bytes = await fetch_pdf(pdf_key)
-            page_errors = 0
+            extracted_pdf_bytes, num_pages, page_errors = await extract_form_pages(pdf_bytes, document_name)
+            report["total_page_errors"] += page_errors
 
-            extracted_pdf_bytes, num_pages = await extract_form_pages(pdf_bytes, document_name)
-
-            if num_pages == 0 and page_errors > 3:
-                print(f"❌ Too many errors, aborting PDF: {document_name}")
-                report["errors"].append(f"{document_name} aborted due to too many page errors")
+            if page_errors > 3:
+                print(f"❌ Too many errors ({page_errors}), aborting PDF: {document_name}")
+                report["errors"].append(f"{document_name} aborted due to {page_errors} page errors")
                 continue
 
             output_path = f"fillable_forms_{document_name}"
