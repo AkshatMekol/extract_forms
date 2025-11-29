@@ -25,9 +25,15 @@ def is_document_complete(tender_id, document_name):
     )
     return record is not None
 
-def mark_document_complete(tender_id, document_name):
+def mark_document_complete(tender_id, document_name, form_pages: list):
+    update_data = {
+        "$addToSet": {"completed_forms": document_name}
+    }
+    if form_pages:  
+        update_data["$set"] = {f"forms.{document_name}": form_pages}
+
     docs_status_collection.update_one(
         {"tender_id": tender_id},
-        {"$addToSet": {"completed_forms": document_name}},
+        update_data,
         upsert=True
     )
