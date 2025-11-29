@@ -1,6 +1,6 @@
 import os
 import openai
-from utils.config import BATCH_SIZE, OPENAI_API_KEY, EMBEDDING_MODEL
+from config import BATCH_SIZE, OPENAI_API_KEY, EMBEDDING_MODEL
 
 openai.api_key = OPENAI_API_KEY
 
