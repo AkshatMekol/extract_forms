@@ -6,7 +6,7 @@ from io import BytesIO
 from PyPDF2 import PdfReader, PdfWriter
 from fastapi import FastAPI, HTTPException
 from utils.s3_utils import list_s3_pdfs, fetch_pdf
-from extract_form.helpers import extract_form_pages 
+from extract_form.pdf_processing import extract_form_pages 
 from utils.mongo_utils import is_form_complete, mark_form_complete
 
 app = FastAPI()
