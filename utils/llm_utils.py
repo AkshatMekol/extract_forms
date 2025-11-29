@@ -4,7 +4,7 @@ import base64
 import requests
 from groq import Groq
 from io import BytesIO
-from utils.config import GROQ_API_KEY, DEEPSEEK_API_URL, DEEPSEEK_API_KEY
+from config import GROQ_API_KEY, DEEPSEEK_API_URL, DEEPSEEK_API_KEY
 
 groq_client = Groq(api_key=GROQ_API_KEY)
 
