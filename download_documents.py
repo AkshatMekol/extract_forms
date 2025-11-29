@@ -1,14 +1,14 @@
 import zipfile
 from io import BytesIO
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from s3_utils import list_s3_pdfs, fetch_pdf
 
-router = APIRouter()
+app = FastAPI()
 
 def build_zip_stream_for_tender(tender_id: str):
     prefix = f"tender-documents/{tender_id}/"
-    pdf_keys = list_s3_pdfs(prefix)
+    pdf_keys = list_s3_pdfs(prefix)  # SYNC
 
     if not pdf_keys:
         raise HTTPException(status_code=404, detail="No PDFs found for this tender")
@@ -17,7 +17,7 @@ def build_zip_stream_for_tender(tender_id: str):
 
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
         for key in pdf_keys:
-            file_bytes = fetch_pdf(key)
+            file_bytes = fetch_pdf(key)  # SYNC
             relative_path = key[len(prefix):] if key.startswith(prefix) else key
             zipf.writestr(relative_path, file_bytes)
 
@@ -25,8 +25,8 @@ def build_zip_stream_for_tender(tender_id: str):
     return zip_buffer
 
 
-@router.get("/download_documents/{tender_id}")
-def download_zip(tender_id: str):
+@app.get("/download_documents/{tender_id}")
+def download_documents(tender_id: str):
     zip_stream = build_zip_stream_for_tender(tender_id)
     filename = f"tender_{tender_id}.zip"
 
