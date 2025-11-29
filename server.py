@@ -32,15 +32,32 @@ async def process_single_tender(tender_id: str):
     print(f"\n===============================")
     print(f"▶ START tender: {tender_id}")
     print(f"===============================")
-    prefix = f"tender-documents/{tender_id}/"
-    pdf_keys = await list_s3_pdfs(prefix)
 
-    if not pdf_keys:
-        print(f"⚠️ No PDFs found for tender ID {tender_id}")
-        return
+    report = {
+        "tender_id": tender_id,
+        "processed_docs": 0,
+        "skipped_docs": 0,
+        "empty_docs": 0,
+        "scanned_pages": 0,
+        "regular_pages": 0,
+        "errors": []
+    }
+
+    s3_prefix = f"tender-documents/{tender_id}/"
+    print(f"📂 Fetching S3 PDFs from prefix: {s3_prefix}")
+
+    pdf_keys = await list_s3_pdfs(s3_prefix)
+    print(f"📄 Found {len(pdf_keys)} PDFs")
 
     for pdf_key in pdf_keys:
-        pdf_name = os.path.basename(pdf_key)
+        document_name = os.path.basename(pdf_key)
+        print(f"📄 Document: {document_name}")
+
+        if await asyncio.to_thread(is_document_complete, tender_id, document_name):
+            print(f"⏩ Already processed, skipping")
+            report["skipped_docs"] += 1
+            continue
+        
         pdf_bytes = await fetch_pdf(pdf_key)
 
         extracted_pdf_bytes, num_pages = await extract_form_pages(pdf_bytes, pdf_name)
