@@ -73,7 +73,8 @@ def extract_form_pages(pdf_bytes: BytesIO, pdf_name: str):
 # import fitz
 # import asyncio
 # from PyPDF2 import PdfReader, PdfWriter
-# from config import MAX_PROCESSES_GROQ, MAX_PROCESSES_DEEPSEEK, CLASSIFY_PROMPT
+# from .config import MAX_PROCESSES_GROQ, MAX_PROCESSES_DEEPSEEK, CLASSIFY_PROMPT
+# from .llm_utils import query_groq, query_deepseek
 
 # MAX_PROCESSES_GROQ = 4
 # MAX_PROCESSES_DEEPSEEK = 8
