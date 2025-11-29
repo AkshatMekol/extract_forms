@@ -5,7 +5,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from s3_utils import list_s3_pdfs, fetch_pdf
 from helpers import extract_form_pages 
 
-async def process_tender(tender_id: str):
+async def process_single_tender(tender_id: str):
     prefix = f"tender-documents/{tender_id}/"
     pdf_keys = await list_s3_pdfs(prefix)
 
@@ -35,13 +35,11 @@ async def process_tender(tender_id: str):
 
         print(f"📊 Total FORM pages in {pdf_name}: {num_pages}")
 
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) < 2:
-        print("Usage: python server.py <tender_id>")
-        sys.exit(1)
-
-    tender_id = sys.argv[1]
-    asyncio.run(process_tender(tender_id))
+@app.post("/process/{tender_id}")
+async def route_process(tender_id: str):
+    print(f"\n🌐 API CALL → /process/{tender_id}")
+    try:
+        return await process_single_tender(tender_id)
+    except Exception as e:
+        print(f"❌ API ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
