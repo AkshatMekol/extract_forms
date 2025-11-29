@@ -21,11 +21,24 @@ def get_tender_ids(min_value):
 
 def is_document_complete(tender_id, document_name):
     record = docs_status_collection.find_one(
+        {"tender_id": tender_id, "completed_documents": document_name}
+    )
+    return record is not None
+
+def mark_document_complete(tender_id, document_name):
+    docs_status_collection.update_one(
+        {"tender_id": tender_id},
+        {"$addToSet": {"completed_documents": document_name}},
+        upsert=True
+    )
+
+def is_form_complete(tender_id, document_name):
+    record = docs_status_collection.find_one(
         {"tender_id": tender_id, "completed_forms": document_name}
     )
     return record is not None
 
-def mark_document_complete(tender_id, document_name, form_pages: list):
+def mark_form_complete(tender_id, document_name, form_pages: list):
     update_data = {
         "$addToSet": {"completed_forms": document_name}
     }
