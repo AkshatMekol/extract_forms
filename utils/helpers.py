@@ -163,7 +163,7 @@ async def extract_form_pages(pdf_bytes: BytesIO, pdf_name: str):
 
         print(f"📄 Processing {pdf_name} - Page {i+1}/{len(doc)} | Result={classification}")
         if classification == "FORM":
-            form_pages.append(i)
+            form_pages.append(i+1)
 
     writer = PdfWriter()
     for p in form_pages:
