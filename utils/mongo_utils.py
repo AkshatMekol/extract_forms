@@ -57,3 +57,20 @@ def mark_form_complete(tender_id, document_name, form_pages: list):
         update_data,
         upsert=True
     )
+
+def get_forms(tender_id):
+    doc = docs_status_collection.find_one(
+        {"tender_id": tender_id},
+        {"_id": 0, "forms": 1, "completed_forms": 1}
+    )
+
+    if not doc:
+        return {
+            "forms": {},
+            "completed_forms": []
+        }
+
+    return {
+        "forms": doc.get("forms", {}),
+        "completed_forms": doc.get("completed_forms", [])
+    }
