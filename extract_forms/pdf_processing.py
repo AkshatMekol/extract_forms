@@ -1,6 +1,7 @@
 import io
 import fitz
 import asyncio
+from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
 from utils.llm_utils import query_groq, query_deepseek
 from config import MAX_PROCESSES_GROQ, MAX_PROCESSES_DEEPSEEK, CLASSIFY_PROMPT
@@ -10,8 +11,10 @@ def is_scanned_page(page):
     return len(text.strip()) < 10
 
 def render_page_to_image(page) -> bytes:
-    image = page.get_pixmap(dpi=200).pil_image.convert("RGB")
-    resized = image.resize((image.width // 2, image.height // 2))
+    pix = page.get_pixmap(dpi=200)
+    mode = "RGB" if pix.alpha == 0 else "RGBA"
+    img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
+    resized = img.resize((img.width // 2, img.height // 2))
     buffer = io.BytesIO()
     resized.save(buffer, format="JPEG", quality=40)
     return buffer.getvalue()
